@@ -1,5 +1,5 @@
-with open('inputData.txt') as f:
-    lines = f.readlines()
+with open('1/input.txt') as file:
+    lines = file.readlines()
 
 totals = []
 
