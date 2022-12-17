@@ -1,3 +1,6 @@
+import os, re, time
+
+
 # Point represents a thing at a specific position on a two dimensional plane
 class Point():
 
@@ -48,17 +51,17 @@ class Point():
                     if len(objects) == 1:
                         char = repr(list(objects)[0])
                     else:
-                        highest_section_int = None
-                        highest_section = None
+                        highest_knot_int = None
+                        highest_knot = None
                         for object in objects:
-                            if isinstance(object, Section):
-                                if (highest_section_int == None) or (object.index > highest_section_int):
-                                    highest_section_int = object.index
-                                    highest_section = repr(object)
-                        if highest_section == None:
+                            if isinstance(object, Knot):
+                                if (highest_knot_int == None) or (object.index > highest_knot_int):
+                                    highest_knot_int = object.index
+                                    highest_knot = repr(object)
+                        if highest_knot == None:
                             char = '#'
                         else:
-                            char = highest_section
+                            char = highest_knot
                 else:
                     char = "."
                 print(char, end=" ")
@@ -76,39 +79,98 @@ class Point():
         return "({}, {})".format(self.x, self.y)
 
 
-# Section represents a section of a rope
-class Section(Point):
+# knot represents a knot of a rope
+class Knot(Point):
 
     objects = []
 
     def __init__(self, x, y):
         super().__init__(x, y)
 
-        # `leader` is the next rope section ahead
-        # `follower` is the next rope section behind
-        # `index` is the count of other rope sections ahead of this instance
-        if Section.objects:
-            self.leader = Section.objects[-1]
+        # `leader` is the next rope knot ahead
+        # `follower` is the next rope knot behind
+        # `index` is the count of other rope knots ahead of this instance
+        if Knot.objects:
+            self.leader = Knot.objects[-1]
             self.follower = None
             self.leader.follower = self
-            
-            self.index = len(Section.objects)
-
+            self.index = len(Knot.objects)
         else:
             self.leader = None
             self.index = 0
 
-        Section.objects.append(self)
+        Knot.objects.append(self)
+
+        # Visit starting position
+        Visit(self.x, self.y)
 
     def __str__(self):
-        return "Section {} at {}".format(self.index, super().__str__())
+        return "knot {} at {}".format(self.index, super().__str__())
 
-    # For displaying in a grid
+    # For displaying in a grid - this is very handy for testing and debugging
     def __repr__(self):
-        return "{}".format(self.index)
+        return "\033[1;31;40m{}\033[0m".format(self.index)
+
+    # Move based on a command (only possible for head knot)
+    def command_move(self, command):
+        if self.index == 0:
+
+            old_x = self.x
+            old_y = self.y
+
+            match command:
+                case "U":
+                    self.y = self.y - 1
+                case "L":
+                    self.x = self.x - 1
+                case "D":
+                    self.y = self.y + 1
+                case "R":
+                    self.x = self.x + 1
+                case _:
+                    # Raise exception if command is invalid
+                    raise Exception("Invalid command")
+
+            # Drag follower
+            if self.follower:
+                self.follower.drag(self.x, self.y, old_x, old_y, self.x - old_x, self.y - old_y, False)
+        
+        else:
+            # Raise exception if not the head knot
+            raise Exception("Only the head knot of the rope can be moved based on a command")
+
+    # Move by being dragged by leader
+    def drag(self, leader_new_x, leader_new_y, leader_old_x, leader_old_y, head_delta_x, head_delta_y, diagonal):
+        x_space = abs(self.x - leader_new_x)
+        y_space = abs(self.y - leader_new_y)
+
+        # Determine if movement is needed
+        if x_space > 1 or y_space > 1:
+
+            old_x = self.x
+            old_y = self.y
+
+            # Move up
+            if leader_new_y < self.y:
+                self.y -= 1
+            # Move left
+            if leader_new_x < self.x:
+                self.x -= 1
+            # Move down
+            if leader_new_y > self.y:
+                self.y += 1
+            # Move right
+            if leader_new_x > self.x:
+                self.x += 1
+
+            # Drag follower
+            if self.follower:
+                self.follower.drag(self.x, self.y, old_x, old_y, head_delta_x, head_delta_y, diagonal)
+            else:
+                Visit(self.x, self.y)
 
 
-# Visit represents a position that the rope has visited
+# Visit represents a position that the tail of the rope has visited
 class Visit(Point):
 
     objects = set()
@@ -135,20 +197,32 @@ class Visit(Point):
 
     # For displaying in a grid
     def __repr__(self):
-        return "#"
+        return '\033[1;33;40m#\033[0m'
 
 
-Visit(-1,0)
-Visit(0,0)
-Visit(1,0)
-Visit(2,0)
-Visit(3,0)
-Visit(4,0)
-Section(1,-1)
-Section(1,-1)
-Section(0,0)
-Section(1,1)
-Section(2,1)
-Section(3,1)
+# Create rope
+number_of_knots = 10
+for knot in range(number_of_knots):
+    Knot(0,0)
 
-Point.print_grid()
+with open('09/input.txt') as file:
+    lines = file.readlines()
+
+# Issue command movements
+for line in lines:
+    elements = re.split(" ", line)
+
+    command = elements[0]
+    multiplier = int(elements[1])
+
+    for i in range(multiplier):
+        Knot.objects[0].command_move(command)
+
+        # UNCOMMENT THIS TO SEE A RENDER OF THE GRID
+        time.sleep(0.1)
+        os.system("cls")
+        Point.print_grid()
+
+# Count visits
+visit_count = len(Visit.objects)
+print("\nPositions visited by tail: {}".format(visit_count))
