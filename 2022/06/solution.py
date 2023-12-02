@@ -21,7 +21,7 @@ def scan_signal(signal, marker_length):
             break
 
 
-with open('06/input.txt') as file:
+with open('2022/06/input.txt') as file:
     signal = file.read()
 
 scan_signal(signal, marker_length=4)  # Part 1

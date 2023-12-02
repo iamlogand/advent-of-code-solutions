@@ -205,7 +205,7 @@ number_of_knots = 10
 for knot in range(number_of_knots):
     Knot(0,0)
 
-with open('09/input.txt') as file:
+with open('2022/09/input.txt') as file:
     lines = file.readlines()
 
 # Issue command movements

@@ -9,7 +9,7 @@ def getSetOfIds(bounds):
     return set(sectionIds)
 
 
-with open('04/input.txt') as file:
+with open('2022/04/input.txt') as file:
     assignments = file.readlines()
 
 containingPairCount = 0

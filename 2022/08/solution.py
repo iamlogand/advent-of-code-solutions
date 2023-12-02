@@ -176,7 +176,7 @@ def score_line(tree_grid, max_height, x_start_position, y_start_position, x_dire
     return visible_trees
 
 
-with open('08/input.txt') as file:
+with open('2022/08/input.txt') as file:
     map = file.readlines()
 
 tree_grid = generate_tree_grid(map)

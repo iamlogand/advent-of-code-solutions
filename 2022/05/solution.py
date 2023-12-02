@@ -60,7 +60,7 @@ def print_report(arrangement, model_number):
     print("Top crates: {}".format(get_top_crates(arrangement)))
 
 
-with open('05/input.txt') as file:
+with open('2022/05/input.txt') as file:
     inputLines = file.readlines()
 
 # Convert the starting arrangement input string to a matrix

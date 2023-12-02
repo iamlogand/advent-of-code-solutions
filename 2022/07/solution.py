@@ -135,7 +135,7 @@ def find_smallest_dir(root_dir, max_size, min_size):
             return dir
 
 
-with open('07/input.txt') as file:
+with open('2022/07/input.txt') as file:
     terminal_output = file.readlines()
 
 # Build then print a representation of the system

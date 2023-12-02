@@ -31,7 +31,7 @@ class Process:
                 break
 
 
-with open('10/input.txt') as input:
+with open('2022/10/input.txt') as input:
     program = input.readlines()
 
 instruction_index = 1

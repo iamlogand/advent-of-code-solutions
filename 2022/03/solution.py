@@ -20,7 +20,7 @@ def findSharedItems(compartments):
 
 # Part 1: find priorities of shared items in rucksack compartments
 
-with open('03/input.txt') as file:
+with open('2022/03/input.txt') as file:
     supplies = file.readlines()
 
 sharedItemPrioritySum = 0

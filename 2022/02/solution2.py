@@ -1,4 +1,4 @@
-with open('02/input.txt') as file:
+with open('2022/02/input.txt') as file:
     tournament = file.readlines()
 
 outcomePairs = {

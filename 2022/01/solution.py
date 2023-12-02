@@ -1,4 +1,4 @@
-with open('01/input.txt') as file:
+with open('2022/01/input.txt') as file:
     lines = file.readlines()
 
 totals = []
