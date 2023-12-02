@@ -65,8 +65,10 @@ def getCalibrationSum(input_text: str, useLetters: bool = False) -> int:
     return out
 
 
-with open("2023/01/input.txt") as input:
+with open("2023/01/input1.txt") as input:
     input_text = input.readlines()
-
     print("Solution for part 1: {}".format(getCalibrationSum(input_text)))
+    
+with open("2023/01/input2.txt") as input:
+    input_text = input.readlines()
     print("Solution for part 2: {}".format(getCalibrationSum(input_text, True)))
