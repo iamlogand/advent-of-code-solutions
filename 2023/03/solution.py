@@ -58,7 +58,7 @@ def parse_schematic(line: str, y: int) -> (List[PartNumber], List[Symbol]):
     return part_nums, symbols
 
 
-def solve_problem(schematic: str) -> int:
+def solve_problem(schematic: str, multiply_gears: bool = False) -> int:
     part_nums = []
     symbols = []
     y = 0
@@ -73,8 +73,11 @@ def solve_problem(schematic: str) -> int:
         matching_part_nums, remaining_part_nums = get_adjacent_part_numbers(
             symbol, part_nums
         )
-        for part_num in matching_part_nums:
-            sum += part_num.number
+        if multiply_gears and symbol.character == "*" and len(matching_part_nums) == 2:
+            sum += matching_part_nums[0].number * matching_part_nums[1].number
+        elif not multiply_gears:
+            for part_num in matching_part_nums:
+                sum += part_num.number
         part_nums = remaining_part_nums
     return sum
 
@@ -83,3 +86,4 @@ with open("2023/03/input.txt") as input:
     schematic = input.readlines()
 
     print("Solution for part 1: {}".format(solve_problem(schematic)))
+    print("Solution for part 2: {}".format(solve_problem(schematic, multiply_gears=True)))
