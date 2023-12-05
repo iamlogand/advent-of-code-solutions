@@ -101,7 +101,7 @@ def find_lowest_location_num(almanac: str, input_has_seed_ranges: bool = False) 
         for s in range(seed_range[0], seed_range[1]):
             result = perform_mapping(s, "seed", "location", maps)
             if result % 100000 == 0:
-                print(result)
+                print(seed_range[0], s, seed_range[1])
             if result < current_min:
                 current_min = result
                 print(current_min, "<<< NEW MIN")
