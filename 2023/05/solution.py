@@ -80,23 +80,32 @@ def parse_seed_ranges(seeds_text: str) -> List[int]:
     return ranges
 
 
-def parse_almanac(almanac: str, input_has_seed_ranges: bool) -> (List[List[int]], List[Map]):
+def parse_almanac(
+    almanac: str, input_has_seed_ranges: bool
+) -> (List[List[int]], List[Map]):
     if input_has_seed_ranges:
         seed_ranges = parse_seed_ranges(almanac[0])
     else:
-        seed_ranges = [[int(seed), int(seed) + 1] for seed in almanac[0].strip().split(" ")[1:]]
+        seed_ranges = [
+            [int(seed), int(seed) + 1] for seed in almanac[0].strip().split(" ")[1:]
+        ]
     maps = parse_maps(almanac[2:])
     return (seed_ranges, maps)
 
 
 def find_lowest_location_num(almanac: str, input_has_seed_ranges: bool = False) -> int:
     seed_ranges, maps = parse_almanac(almanac, input_has_seed_ranges)
-    locations = []
+    current_min = 999999999999
     for seed_range in seed_ranges:
-        print(seed_range)
+        print("Processing:", seed_range)
         for s in range(seed_range[0], seed_range[1]):
-            locations.append(perform_mapping(s, "seed", "location", maps))
-    return min(locations)
+            result = perform_mapping(s, "seed", "location", maps)
+            if result % 100000 == 0:
+                print(result)
+            if result < current_min:
+                current_min = result
+                print(current_min, "<<< NEW MIN")
+    return current_min
 
 
 with open("2023/05/input.txt") as input:
