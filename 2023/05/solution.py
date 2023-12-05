@@ -66,20 +66,40 @@ def parse_maps(lines: List[str]) -> List[Map]:
     return maps
 
 
-def parse_almanac(almanac: str) -> (List[int], List[Map]):
-    seeds = [int(seed) for seed in almanac[0].strip().split(" ")[1:]]
+def parse_seed_ranges(seeds_text: str) -> List[int]:
+    range_values = seeds_text.strip().split(" ")[1:]
+    i = 0
+    ranges = []
+    last_val = 0
+    for value in range_values:
+        if i % 2 == 0:
+            last_val = int(value)
+        else:
+            ranges.append([last_val, last_val + int(value)])
+        i += 1
+    return ranges
+
+
+def parse_almanac(almanac: str, input_has_seed_ranges: bool) -> (List[List[int]], List[Map]):
+    if input_has_seed_ranges:
+        seed_ranges = parse_seed_ranges(almanac[0])
+    else:
+        seed_ranges = [[int(seed), int(seed) + 1] for seed in almanac[0].strip().split(" ")[1:]]
     maps = parse_maps(almanac[2:])
-    return (seeds, maps)
+    return (seed_ranges, maps)
 
 
-def find_lowest_location_num(almanac: str) -> int:
-    seeds, maps = parse_almanac(almanac)
+def find_lowest_location_num(almanac: str, input_has_seed_ranges: bool = False) -> int:
+    seed_ranges, maps = parse_almanac(almanac, input_has_seed_ranges)
     locations = []
-    for seed in seeds:
-        locations.append(perform_mapping(seed, "seed", "location", maps))
+    for seed_range in seed_ranges:
+        print(seed_range)
+        for s in range(seed_range[0], seed_range[1]):
+            locations.append(perform_mapping(s, "seed", "location", maps))
     return min(locations)
 
 
 with open("2023/05/input.txt") as input:
     almanac = input.readlines()
     print("Solution for part 1: {}\n".format(find_lowest_location_num(almanac)))
+    print("Solution for part 2: {}\n".format(find_lowest_location_num(almanac, True)))
