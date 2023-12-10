@@ -1,3 +1,5 @@
+import re
+from math import lcm
 from typing import Dict
 
 
@@ -17,48 +19,38 @@ def parse_map(map: str) -> (str, Dict[str, Node], str):
     return instructions, nodes
 
 
-def solve_part_1(map: str) -> int:
+def count_steps_along_route(map: str, start_pattern: str, end_pattern: str) -> int:
     instructions, nodes = parse_map(map)
     step = 0
     instruction_count = len(instructions)
-    current_node = nodes["AAA"]
+    current_node = [
+        nodes[key] for key in nodes.keys() if re.match(start_pattern, key) is not None
+    ][0]
     while True:
         instruction_step = step % instruction_count
         instruction = instructions[instruction_step]
         next_key = current_node.left if instruction else current_node.right
         current_node = nodes[next_key]
         step += 1
-        if next_key == "ZZZ":
-            break
-    return step
-
-
-def solve_part_2(map: str) -> int:
-    instructions, nodes = parse_map(map)
-    step = 0
-    instruction_count = len(instructions)
-    current_nodes = [nodes[key] for key in nodes.keys() if key[-1] == "A"]
-    ghost_count = len(current_nodes)
-    while True:
-        instruction_step = step % instruction_count
-        instruction = instructions[instruction_step]
-        all_keys_end_in_Z = True
-        for i in range(ghost_count):
-            current_node = current_nodes[i]
-            next_key = current_node.left if instruction else current_node.right
-            if all_keys_end_in_Z and next_key[-1] != "Z":
-                all_keys_end_in_Z = False
-            current_nodes[i] = nodes[next_key]
-        step += 1
-        if all_keys_end_in_Z:
+        if re.match(end_pattern, next_key) is not None:
             break
     return step
 
 
 with open("2023/08/input1.txt") as input:
-    map = input.readlines()
-    print("Solution for part 1: {}".format(solve_part_1(map)))
+    map1 = input.readlines()
+step_count = count_steps_along_route(map1, start_pattern="AAA", end_pattern="ZZZ")
+print("Solution for part 1: {}".format(step_count))
 
 with open("2023/08/input2.txt") as input:
-    map = input.readlines()
-    print("Solution for part 2: {}".format(solve_part_2(map)))
+    map2 = input.readlines()
+nodes = parse_map(map2)[1]
+starting_keys = [key for key in nodes.keys() if re.match("..A", key) is not None]
+step_counts = []
+for key in starting_keys:
+    step_count = count_steps_along_route(map2, start_pattern=key, end_pattern="..Z")
+    step_counts.append(step_count)
+multiple = step_counts[0]
+for i in range(1, len(step_counts)):
+    multiple = lcm(multiple, step_counts[i])
+print("Solution for part 2: {}".format(multiple))
