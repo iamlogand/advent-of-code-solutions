@@ -23,12 +23,24 @@ def check_all_zeros(nums: List[int]) -> bool:
     return True
 
 
-with open("2023/09/input.txt") as input:
-    lines = input.readlines()
+def make_history(history: List[List[int]], focus_index: int, backwards: bool) -> None:
+    depth = len(history) - 1
+    history[depth].append(0)
+    while depth > 0:
+        child = history[depth][focus_index]
+        depth -= 1
+        sibling = history[depth][focus_index]
+        if backwards:
+            extrapolated_value = sibling - child
+            history[depth].insert(0, extrapolated_value)
+        else:
+            extrapolated_value = child + sibling
+            history[depth].append(extrapolated_value)
 
 
-def solve_part_1() -> int:
+def sum_extrapolations(lines: List[str], backwards: bool = False) -> int:
     sum = 0
+    focus_index = 0 if backwards else -1
     for line in lines:
         history = [[int(item) for item in line.strip().split(" ")]]
         current_sequence = history[0]
@@ -36,19 +48,13 @@ def solve_part_1() -> int:
         while not check_all_zeros(current_sequence):
             current_sequence = get_differences(current_sequence)
             history.append(current_sequence)
-
         while len(history[0]) < target_length:
-            depth = len(history) - 1
-            history[depth].append(0)
-            while depth > 0:
-                child = history[depth][-1]
-                depth -= 1
-                sibling = history[depth][-1]
-                extrapolated_value = child + sibling
-                history[depth].append(extrapolated_value)
-
-        sum += history[0][-1]
+            make_history(history, focus_index, backwards)
+        sum += history[0][focus_index]
     return sum
 
 
-print("Solution for part 1: {}".format(solve_part_1()))
+with open("2023/09/input.txt") as input:
+    lines = input.readlines()
+print("Solution for part 1: {}".format(sum_extrapolations(lines)))
+print("Solution for part 2: {}".format(sum_extrapolations(lines, backwards=True)))
