@@ -307,10 +307,6 @@ def lay_next_marker(
         )
 
 
-def fill_in_gaps(grid: Dict[int, Dict[int, Pipe | None | str]]) -> None:
-    pass
-
-
 with open("2023/10/input.txt") as input:
     grid, height, width, start_y, start_x = parse_input(input.readlines())
 
@@ -360,8 +356,6 @@ while True:
     current_pipe = next_pipe
     current_direction = next_direction
     step_count += 1
-
-fill_in_gaps(grid)
 
 outer_left_count = all_outer_results.count("L")
 outer_right_count = all_outer_results.count("R")
