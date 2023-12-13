@@ -14,7 +14,6 @@ class Galaxy:
             self.generate_pairs()
             self.objects.append(self)
             self.update_field_size(self.y, self.x)
-            print(f"{len(self.objects)}/428")
 
     def generate_pairs(self) -> None:
         for other in Galaxy.objects:
