@@ -1,64 +1,114 @@
 from typing import List
 
 
-def validate_candidate(candidate: str, expected_damaged: List[int], input_arrangement: str) -> bool:
-    damage_count = 0
-    for char in candidate:
-        if char == "#":
-            damage_count += 1
-    expected_damage_count = sum(expected_damaged)
-    remaining = len(input_arrangement) - len(candidate)
-    if damage_count + remaining < expected_damage_count or damage_count > expected_damage_count:
-        return False
-    candidate_damaged_counts = []
-    parsing_group = False
-    for i in range(len(candidate)):
-        expected_char = input_arrangement[i]
-        if candidate[i] != expected_char and expected_char != "?":
-            return False
-        if candidate[i] == "#":
-            if parsing_group:
-                candidate_damaged_counts[-1] += 1
-            else:
-                parsing_group = True
-                candidate_damaged_counts.append(1)
-        else:
-            if parsing_group:
-                parsing_group = False
-        if not parsing_group and candidate_damaged_counts != expected_damaged[:len(candidate_damaged_counts)]:
-            return False
-    if len(candidate) == len(input_arrangement) and candidate_damaged_counts != expected_damaged:
-        return False
-    return True
+def guess_answer(
+    remaining_input: str,
+    candidates: List[str],
+    remaining_damaged: List[int],
+    completed_damaged: List[int] = [],
+    current_group_index: int = 0,
+    this_candidate: str = "",
+) -> List[str]:
+    # TODO: instead of validating the whole candidate, see if i can control flow to only 'guess' legal characters
+    # Could track index within the current group, and whether currently in a group
+    # From this vantage point, we can figure out what is legal for the next character and control flow within this method based on that
 
+    # The `current_group_index` argument tracks the count of # in the group that is currently being generated
+    # If not currently generating a group, then `current_group_index` is -1
 
-def guess_answer(input_arrangement: str, candidates: List[str], expected_damaged: List[int], this_candidate: str = "", char_index: int = 0) -> List[str]:
-    candidate_is_valid = validate_candidate(
-        this_candidate, expected_damaged, input_arrangement)
-    if not candidate_is_valid:
-        return
-    if char_index >= len(input_arrangement):
+    if remaining_input == "":
         candidates.append(this_candidate)
         return
-    this_char = input_arrangement[char_index]
-    if this_char == ".":
-        guess_answer(
-            input_arrangement, candidates, expected_damaged,
-            this_candidate + ".", char_index + 1)
-        return
-    elif this_char == "#":
-        guess_answer(
-            input_arrangement, candidates, expected_damaged,
-            this_candidate + "#", char_index + 1)
+    this_char = remaining_input[0]
+    remaining_input = remaining_input[1:]
+    if this_char == "?":
+        allow_path_1 = allow_path_2 = True
+
+        # If there are no remaining damaged
+        # then force write of .s
+        if allow_path_2 and remaining_damaged == []:
+            allow_path_2 = False
+
+        # If the current group is greater than or equal to the first remaining damaged
+        # then force write of .s
+        if allow_path_2 and current_group_index >= remaining_damaged[0]:
+            allow_path_2 = False
+
+        # If remaining space is less than the minimum space required for damaged groups
+        # then force write of #s
+        if (
+            allow_path_1
+            and current_group_index < 1
+            and len(remaining_input)
+            < sum(remaining_damaged) + max(len(remaining_damaged) - 1, 0)
+        ):
+            allow_path_1 = False
+
+        # If part way through writing a damaged group and the end has not been reached
+        # then force write of #s
+        if (
+            allow_path_1
+            and current_group_index > 0
+            and current_group_index < remaining_damaged[0]
+        ):
+            allow_path_1 = False
+
+        # Path 1 - write a . (non-damaged spring)
+        if allow_path_1:
+            if current_group_index > 0:
+                path_1_completed = completed_damaged + [remaining_damaged[0]]
+                path_1_remaining = remaining_damaged[1:]
+            else:
+                path_1_completed = completed_damaged
+                path_1_remaining = remaining_damaged
+            guess_answer(
+                remaining_input,
+                candidates,
+                path_1_remaining,
+                path_1_completed,
+                -1 if current_group_index > 0 else current_group_index - 1,
+                this_candidate + ".",
+            )
+        # Path 2 - write a # (damaged spring)
+        if allow_path_2:
+            guess_answer(
+                remaining_input,
+                candidates,
+                remaining_damaged,
+                completed_damaged,
+                1 if current_group_index < 0 else current_group_index + 1,
+                this_candidate + "#",
+            )
         return
     else:
-        guess_answer(
-            input_arrangement, candidates, expected_damaged,
-            this_candidate + ".", char_index + 1)
-        guess_answer(
-            input_arrangement, candidates, expected_damaged,
-            this_candidate + "#", char_index + 1)
-        return
+        if remaining_damaged == [] and "#" in remaining_input:
+            return
+        if this_char == ".":
+            if current_group_index > 0 and current_group_index < remaining_damaged[0]:
+                return
+            guess_answer(
+                remaining_input,
+                candidates,
+                remaining_damaged[1:] if current_group_index > 0 else remaining_damaged,
+                completed_damaged + [remaining_damaged[0]]
+                if current_group_index > 0
+                else completed_damaged,
+                -1 if current_group_index > 0 else current_group_index - 1,
+                this_candidate + ".",
+            )
+            return
+        else:
+            if len(remaining_damaged) == 0 or current_group_index >= remaining_damaged[0]:
+                return
+            guess_answer(
+                remaining_input,
+                candidates,
+                remaining_damaged,
+                completed_damaged,
+                1 if current_group_index < 0 else current_group_index + 1,
+                this_candidate + "#",
+            )
+            return
 
 
 def sum_variants(input_arrangement: str, expected_damaged: List[int]) -> int:
