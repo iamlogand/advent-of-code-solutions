@@ -125,8 +125,13 @@ print("Answer for part 1: {}".format(variant_sum))
 print("\nSOLVING PART 2")
 variant_sum = 0
 for line_index in range(len(lines)):
-    print(f"Solving line {line_index + 1} of {len(lines)}")
+    sub_start_time = time.time()
     line = lines[line_index]
+    question_count = line.count("?") * 5
+    group_count = len(line.split(" ")[1].split(",")) * 5
+    print(
+        f"Solving line {line_index + 1:4} of {len(lines)}: {question_count:3} unknowns, {group_count:3} groups"
+    )
     split_input_arrangement = [line.split(" ")[0]] * 5
     input_arrangement = ""
     for i in range(len(split_input_arrangement)):
@@ -135,8 +140,11 @@ for line_index in range(len(lines)):
         input_arrangement += split_input_arrangement[i]
     damaged_counts = [int(n) for n in line.split(" ")[1].split(",")] * 5
     variant_sum += sum_variants(input_arrangement, damaged_counts)
+    end_time = time.time()
+    execution_time = int((end_time - sub_start_time) * 1000)
+    print(f"Solved in {execution_time} ms")
 print("Answer for part 2: {}".format(variant_sum))
 
 end_time = time.time()
 execution_time = int((end_time - start_time) * 1000)
-print(f"\nThe script took {execution_time} ms to run.")
+print(f"\nThe script took {execution_time} ms to run")
