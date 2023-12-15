@@ -1,14 +1,14 @@
 from typing import List
 import time
+from collections import deque
 
 
-def guess_answer(
+def find_combinations(
     remaining_input: str,
-    candidates: int,
     remaining_damaged: List[int],
-    completed_damaged: List[int] = [],
+    this_candidate: deque,
+    candidates: int = 0,
     current_group_index: int = 0,
-    this_candidate: str = "",
 ) -> List[str]:
     if remaining_input == "":
         return candidates + 1
@@ -19,7 +19,7 @@ def guess_answer(
 
         # If there are no remaining damaged
         # then force write of .s
-        if allow_path_2 and remaining_damaged == []:
+        if allow_path_2 and not remaining_damaged:
             allow_path_2 = False
 
         # If the current group is greater than or equal to the first remaining damaged
@@ -49,45 +49,43 @@ def guess_answer(
         # Path 1 - write a . (non-damaged spring)
         if allow_path_1:
             if current_group_index > 0:
-                path_1_completed = completed_damaged + [remaining_damaged[0]]
                 path_1_remaining = remaining_damaged[1:]
             else:
-                path_1_completed = completed_damaged
                 path_1_remaining = remaining_damaged
-            candidates = guess_answer(
+            this_candidate.append(".")
+            candidates = find_combinations(
                 remaining_input,
-                candidates,
                 path_1_remaining,
-                path_1_completed,
+                this_candidate,
+                candidates,
                 -1 if current_group_index > 0 else current_group_index - 1,
-                this_candidate + ".",
             )
+            this_candidate.pop()
         # Path 2 - write a # (damaged spring)
         if allow_path_2:
-            candidates = guess_answer(
+            this_candidate.append("#")
+            candidates = find_combinations(
                 remaining_input,
-                candidates,
                 remaining_damaged,
-                completed_damaged,
+                this_candidate,
+                candidates,
                 1 if current_group_index < 0 else current_group_index + 1,
-                this_candidate + "#",
             )
+            this_candidate.pop()
         return candidates
     else:
-        if remaining_damaged == [] and "#" in remaining_input:
+        if not remaining_damaged and "#" in remaining_input:
             return candidates
         if this_char == ".":
             if current_group_index > 0 and current_group_index < remaining_damaged[0]:
                 return candidates
-            candidates = guess_answer(
+            this_candidate.append(".")
+            candidates = find_combinations(
                 remaining_input,
-                candidates,
                 remaining_damaged[1:] if current_group_index > 0 else remaining_damaged,
-                completed_damaged + [remaining_damaged[0]]
-                if current_group_index > 0
-                else completed_damaged,
+                this_candidate,
+                candidates,
                 -1 if current_group_index > 0 else current_group_index - 1,
-                this_candidate + ".",
             )
             return candidates
         else:
@@ -96,19 +94,19 @@ def guess_answer(
                 or current_group_index >= remaining_damaged[0]
             ):
                 return candidates
-            candidates = guess_answer(
+            this_candidate.append("#")
+            candidates = find_combinations(
                 remaining_input,
-                candidates,
                 remaining_damaged,
-                completed_damaged,
+                this_candidate,
+                candidates,
                 1 if current_group_index < 0 else current_group_index + 1,
-                this_candidate + "#",
             )
             return candidates
 
 
 def sum_variants(input_arrangement: str, expected_damaged: List[int]) -> int:
-    candidates = guess_answer(input_arrangement, 0, expected_damaged)
+    candidates = find_combinations(input_arrangement, expected_damaged, deque())
     return candidates
 
 
@@ -141,4 +139,4 @@ print("Answer for part 2: {}".format(variant_sum))
 
 end_time = time.time()
 execution_time = int((end_time - start_time) * 1000)
-print(f"The script took {execution_time} ms to run.")
+print(f"\nThe script took {execution_time} ms to run.")
