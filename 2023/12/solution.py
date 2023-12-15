@@ -1,4 +1,5 @@
 from typing import List
+import time
 
 
 def guess_answer(
@@ -111,6 +112,7 @@ def sum_variants(input_arrangement: str, expected_damaged: List[int]) -> int:
     return candidates
 
 
+start_time = time.time()
 with open("2023/12/input.txt") as input:
     lines = [line.strip() for line in input.readlines()]
 
@@ -136,3 +138,7 @@ for line_index in range(len(lines)):
     damaged_counts = [int(n) for n in line.split(" ")[1].split(",")] * 5
     variant_sum += sum_variants(input_arrangement, damaged_counts)
 print("Answer for part 2: {}".format(variant_sum))
+
+end_time = time.time()
+execution_time = int((end_time - start_time) * 1000)
+print(f"The script took {execution_time} ms to run.")
