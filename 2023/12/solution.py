@@ -116,15 +116,15 @@ def sum_variants(input_arrangement: str, expected_damaged: List[int]) -> int:
 with open("2023/12/input.txt") as input:
     lines = [line.strip() for line in input.readlines()]
 
-print("SOLVING PART 1\n")
+print("SOLVING PART 1")
 variant_sum = 0
 for line in lines:
     input_arrangement = line.split(" ")[0]
     expected_damaged = [int(n) for n in line.split(" ")[1].split(",")]
     variant_sum += sum_variants(input_arrangement, expected_damaged)
-print("Solution for part 1: {}".format(variant_sum))
+print("Answer for part 1: {}".format(variant_sum))
 
-print("\nSOLVING PART 2\n")
+print("\nSOLVING PART 2")
 variant_sum = 0
 for line_index in range(len(lines)):
     print(f"Solving line {line_index + 1} of {len(lines)}")
@@ -137,4 +137,4 @@ for line_index in range(len(lines)):
         input_arrangement += split_input_arrangement[i]
     damaged_counts = [int(n) for n in line.split(" ")[1].split(",")] * 5
     variant_sum += sum_variants(input_arrangement, damaged_counts)
-print("\nSolution for part 2: {}".format(variant_sum))
+print("Answer for part 2: {}".format(variant_sum))
