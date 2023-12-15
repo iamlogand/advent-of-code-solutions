@@ -9,13 +9,6 @@ def guess_answer(
     current_group_index: int = 0,
     this_candidate: str = "",
 ) -> List[str]:
-    # TODO: instead of validating the whole candidate, see if i can control flow to only 'guess' legal characters
-    # Could track index within the current group, and whether currently in a group
-    # From this vantage point, we can figure out what is legal for the next character and control flow within this method based on that
-
-    # The `current_group_index` argument tracks the count of # in the group that is currently being generated
-    # If not currently generating a group, then `current_group_index` is -1
-
     if remaining_input == "":
         candidates.append(this_candidate)
         return
@@ -98,7 +91,10 @@ def guess_answer(
             )
             return
         else:
-            if len(remaining_damaged) == 0 or current_group_index >= remaining_damaged[0]:
+            if (
+                len(remaining_damaged) == 0
+                or current_group_index >= remaining_damaged[0]
+            ):
                 return
             guess_answer(
                 remaining_input,
