@@ -3,15 +3,14 @@ from typing import List
 
 def guess_answer(
     remaining_input: str,
-    candidates: List[str],
+    candidates: int,
     remaining_damaged: List[int],
     completed_damaged: List[int] = [],
     current_group_index: int = 0,
     this_candidate: str = "",
 ) -> List[str]:
     if remaining_input == "":
-        candidates.append(this_candidate)
-        return
+        return candidates + 1
     this_char = remaining_input[0]
     remaining_input = remaining_input[1:]
     if this_char == "?":
@@ -54,7 +53,7 @@ def guess_answer(
             else:
                 path_1_completed = completed_damaged
                 path_1_remaining = remaining_damaged
-            guess_answer(
+            candidates = guess_answer(
                 remaining_input,
                 candidates,
                 path_1_remaining,
@@ -64,7 +63,7 @@ def guess_answer(
             )
         # Path 2 - write a # (damaged spring)
         if allow_path_2:
-            guess_answer(
+            candidates = guess_answer(
                 remaining_input,
                 candidates,
                 remaining_damaged,
@@ -72,14 +71,14 @@ def guess_answer(
                 1 if current_group_index < 0 else current_group_index + 1,
                 this_candidate + "#",
             )
-        return
+        return candidates
     else:
         if remaining_damaged == [] and "#" in remaining_input:
-            return
+            return candidates
         if this_char == ".":
             if current_group_index > 0 and current_group_index < remaining_damaged[0]:
-                return
-            guess_answer(
+                return candidates
+            candidates = guess_answer(
                 remaining_input,
                 candidates,
                 remaining_damaged[1:] if current_group_index > 0 else remaining_damaged,
@@ -89,14 +88,14 @@ def guess_answer(
                 -1 if current_group_index > 0 else current_group_index - 1,
                 this_candidate + ".",
             )
-            return
+            return candidates
         else:
             if (
                 len(remaining_damaged) == 0
                 or current_group_index >= remaining_damaged[0]
             ):
-                return
-            guess_answer(
+                return candidates
+            candidates = guess_answer(
                 remaining_input,
                 candidates,
                 remaining_damaged,
@@ -104,13 +103,12 @@ def guess_answer(
                 1 if current_group_index < 0 else current_group_index + 1,
                 this_candidate + "#",
             )
-            return
+            return candidates
 
 
 def sum_variants(input_arrangement: str, expected_damaged: List[int]) -> int:
-    candidates = []
-    guess_answer(input_arrangement, candidates, expected_damaged)
-    return len(candidates)
+    candidates = guess_answer(input_arrangement, 0, expected_damaged)
+    return candidates
 
 
 with open("2023/12/input.txt") as input:
