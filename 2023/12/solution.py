@@ -43,14 +43,14 @@ def sum_variants_for_line(input_arrangement: str, expected_damaged: List[int]) -
         if damaged_index < len(expected_damaged):
             damaged_end_index = index + expected_damaged[damaged_index]
 
-            # Check if it's possible to place a "#" character
+            # Check if it's possible to place a series of "#" characters
             # at the current index considering the current damaged index
             if (
                 "." not in input_arrangement[index:damaged_end_index]
                 and damaged_end_index < len(input_arrangement)
                 and "#" not in input_arrangement[damaged_end_index]
             ):
-                # Path for the next character being "#"
+                # Path for the next series of characters being "#" characters
                 variant_count += sum_variants(damaged_end_index + 1, damaged_index + 1)
 
         return variant_count
