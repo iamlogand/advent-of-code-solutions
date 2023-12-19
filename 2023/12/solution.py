@@ -7,7 +7,7 @@ from typing import List
 I couldn't solve the problem myself - my solution is based on another solution I found online,
 and this is my first exposure to dynamic programming.
 
-This solution uses a dynamic programming. The problem is broken down into sub-problems,
+This solution uses dynamic programming. The problem is broken down into sub-problems,
 where each sub-problem is solved by the `sum_variants` function once.
 The function has been setup to take repeatable arguments
 and it uses memoization to cache results for a specific combination of arguments.
