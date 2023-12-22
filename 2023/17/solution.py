@@ -3,7 +3,7 @@ from typing import List, Tuple
 import time
 
 
-def get_movements(y: int, x: int, direction: str) -> List[Tuple[int, int, str, List[Tuple[int, int]]]]:
+def get_movements(y: int, x: int, direction: str, matrix: List[str]) -> List[Tuple[int, int, str, int]]:
     """
     Gets a list of possible movements, where each movement contains a new y, a new x, a new direction
     and list of coordinates that were passed through for each
@@ -25,16 +25,18 @@ def get_movements(y: int, x: int, direction: str) -> List[Tuple[int, int, str, L
             y_dir = 1
     for next_direction in next_directions:
         for distance in range(1, 4):
-            crossed_blocks = []
-            for i in range(distance):
-                crossed_blocks.append(
-                    (y + y_dir * (i + 1), x + x_dir * (i + 1)))
+            loss_increase = 0
+            for i in range(1, distance + 1):
+                try:
+                    loss_increase += int(matrix[y + y_dir * i][x + x_dir * i])
+                except IndexError:
+                    pass
             movements.append(
-                (y + y_dir * distance, x + x_dir * distance, next_direction, crossed_blocks))
+                (y + y_dir * distance, x + x_dir * distance, next_direction, loss_increase))
     return movements
 
 
-def find_best_path(matrix: List[str], target_y: int, target_x: int) -> int:
+def find_best_path(matrix: List[str], target_y: int, target_x: int, base_loss: int) -> int:
     h = len(matrix)
     w = len(matrix[0])
     half_circumference = h + w - 1
@@ -47,22 +49,19 @@ def find_best_path(matrix: List[str], target_y: int, target_x: int) -> int:
                 return 1
 
     @cache
-    def find_path(y: int = 0, x: int = 0, direction: str = "right", loss: int = 0, min_loss: int = 1200) -> int:
+    def find_path(y: int = 0, x: int = 0, direction: str = "right", loss: int = 0, min_loss: int = base_loss) -> int:
         """
         Returns minimum loss.
         """
-        if loss >= min_loss or loss + half_circumference - y - x > min_loss:
+        if loss >= abs(min_loss) or loss + half_circumference - y - x > abs(min_loss):
             return min_loss
         if y == target_y and x == target_x:
-            print("new min loss", min_loss)
+            print("New lowest loss:", loss)
             return loss
-        movements = get_movements(y, x, direction)
+        movements = get_movements(y, x, direction, matrix)
         movements.sort(key=custom_sort)
         for movement in movements:
-            this_loss = loss
-            for block in movement[3]:
-                if 0 <= block[0] < h and 0 <= block[1] < w:
-                    this_loss += int(matrix[block[0]][block[1]])
+            this_loss = loss + movement[3]
             if 0 <= y < h and 0 <= x < w:
                 min_loss = find_path(
                     movement[0], movement[1], movement[2], this_loss, min_loss)
@@ -76,7 +75,10 @@ start_time = time.time()
 with open("2023/17/input.txt") as input:
     matrix = [line.strip() for line in input.readlines()]
 
-min_loss = find_best_path(matrix, len(matrix) - 1, len(matrix[0]) - 1)
+BASE_LOSS = 1000
+
+min_loss = find_best_path(
+    matrix, len(matrix) - 1, len(matrix[0]) - 1, BASE_LOSS)
 print(f"Answer for part 1: {min_loss}")
 
 end_time = time.time()
