@@ -1,37 +1,84 @@
-"""
-THE PLAN
+from functools import cache
+from typing import List, Tuple
+import time
 
-To find the route with the least heat loss, from the top left to the bottom right,
-I'll have to calculate many possible paths from the start to the end, which is a lot of paths.
 
-To save time when finding paths, I'll have to use dynamic programming, like problem 12.
-The sub-problems needs to be framed in a repeatable way - by making a function that will be called many times with the same arguments.
-The DP function results must be cached so that the results can be reused.
+def get_movements(y: int, x: int, direction: str) -> List[Tuple[int, int, str, List[Tuple[int, int]]]]:
+    """
+    Gets a list of possible movements, where each movement contains a new y, a new x, a new direction
+    and list of coordinates that were passed through for each
+    """
+    if direction in ["left", "right"]:
+        next_directions = ["up", "down"]
+    else:
+        next_directions = ["left", "right"]
+    movements = []
+    x_dir = y_dir = 0
+    match direction:
+        case "left":
+            x_dir = -1
+        case "up":
+            y_dir = -1
+        case "right":
+            x_dir = 1
+        case "down":
+            y_dir = 1
+    for next_direction in next_directions:
+        for distance in range(1, 4):
+            crossed_blocks = []
+            for i in range(distance):
+                crossed_blocks.append(
+                    (y + y_dir * (i + 1), x + x_dir * (i + 1)))
+            movements.append(
+                (y + y_dir * distance, x + x_dir * distance, next_direction, crossed_blocks))
+    return movements
 
-The sub-problem is finding the optimum route to the end given:
-    - the starting location
-    - the starting direction
 
-So for the real input, the maximum number of sub-problems is the product of:
-    - 19881 (the number of locations in a 141*141 grid)
-    - 4 (the number of starting directions)
+def find_best_path(matrix: List[str], target_y: int, target_x: int) -> int:
+    h = len(matrix)
+    w = len(matrix[0])
+    half_circumference = h + w - 1
 
-This equals 79524 possible sub-problems.
+    def custom_sort(movement: (int, int, str, List[Tuple[int, int]])):
+        match movement[2]:
+            case "right" | "down":
+                return 0
+            case "left" | "up":
+                return 1
 
-To optimize each sub-problem, the first path that the path finder checks could be the one that moves directly towards the destination,
-in a zig zag pattern due to the balance constraint. (Perhaps all path finding should first move towards the target).
-The algorithm should save the heat loss for this initial route as the least_heat_loss.
-Every subsequent route that the path finder checks will be cancelled the moment it's heat loss exceeds the value of least_heat_loss.
-If a route with a lower heat loss is found, least_heat_loss will be set to this value.
+    @cache
+    def find_path(y: int = 0, x: int = 0, direction: str = "right", loss: int = 0, min_loss: int = 1200) -> int:
+        """
+        Returns minimum loss.
+        """
+        if loss >= min_loss or loss + half_circumference - y - x > min_loss:
+            return min_loss
+        if y == target_y and x == target_x:
+            print("new min loss", min_loss)
+            return loss
+        movements = get_movements(y, x, direction)
+        movements.sort(key=custom_sort)
+        for movement in movements:
+            this_loss = loss
+            for block in movement[3]:
+                if 0 <= block[0] < h and 0 <= block[1] < w:
+                    this_loss += int(matrix[block[0]][block[1]])
+            if 0 <= y < h and 0 <= x < w:
+                min_loss = find_path(
+                    movement[0], movement[1], movement[2], this_loss, min_loss)
+        return min_loss
 
-Each time the function is called, this will represent the movement of the crucible 6 possible steps:
-    - Forward one, then turn left
-    - Forward two, then turn left
-    - Forward three, then turn left
-    - Forward one, then turn right
-    - Forward two, then turn right
-    - Forward three, then turn right
+    return find_path()
 
-The function will have to consider the validity of the step (whether the ending is still inside the matrix),
-and the amount of heat lost during the step (checking the heat loss of every block that was passed through).
-"""
+
+start_time = time.time()
+
+with open("2023/17/input.txt") as input:
+    matrix = [line.strip() for line in input.readlines()]
+
+min_loss = find_best_path(matrix, len(matrix) - 1, len(matrix[0]) - 1)
+print(f"Answer for part 1: {min_loss}")
+
+end_time = time.time()
+execution_time = int((end_time - start_time) * 1000)
+print(f"The script took {execution_time} ms to run")
