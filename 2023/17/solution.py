@@ -3,25 +3,25 @@ from typing import List, Tuple
 import time
 
 
-def get_movements(y: int, x: int, direction: str, matrix: List[str]) -> List[Tuple[int, int, str, int]]:
+def get_movements(y: int, x: int, direction: int, matrix: List[str]) -> List[Tuple[int, int, int, int]]:
     """
     Gets a list of possible movements, where each movement contains a new y, a new x, a new direction
     and list of coordinates that were passed through for each
     """
-    if direction in ["left", "right"]:
-        next_directions = ["up", "down"]
+    if direction in [0, 2]:
+        next_directions = [1, 3]
     else:
-        next_directions = ["left", "right"]
+        next_directions = [0, 2]
     movements = []
     x_dir = y_dir = 0
     match direction:
-        case "left":
+        case 0:
             x_dir = -1
-        case "up":
+        case 1:
             y_dir = -1
-        case "right":
+        case 2:
             x_dir = 1
-        case "down":
+        case 3:
             y_dir = 1
     for next_direction in next_directions:
         for distance in range(1, 4):
@@ -41,15 +41,15 @@ def find_best_path(matrix: List[str], target_y: int, target_x: int, base_loss: i
     w = len(matrix[0])
     half_circumference = h + w - 1
 
-    def custom_sort(movement: (int, int, str, List[Tuple[int, int]])):
+    def custom_sort(movement: (int, int, int, List[Tuple[int, int]])):
         match movement[2]:
-            case "right" | "down":
+            case 2 | 3:
                 return 0
-            case "left" | "up":
+            case 0 | 1:
                 return 1
 
     @cache
-    def find_path(y: int = 0, x: int = 0, direction: str = "right", loss: int = 0, min_loss: int = base_loss) -> int:
+    def find_path(y: int, x: int, direction: int, loss: int, min_loss: int) -> int:
         """
         Returns minimum loss.
         """
@@ -67,7 +67,7 @@ def find_best_path(matrix: List[str], target_y: int, target_x: int, base_loss: i
                     movement[0], movement[1], movement[2], this_loss, min_loss)
         return min_loss
 
-    return find_path()
+    return find_path(0, 0, 2, 0, base_loss)
 
 
 start_time = time.time()
