@@ -2,6 +2,8 @@ from functools import cache
 from typing import List, Tuple
 import time
 
+BASE_LOSS = 1000
+
 
 def get_movements(y: int, x: int, direction: int, matrix: List[str]) -> List[Tuple[int, int, int, int]]:
     """
@@ -36,7 +38,7 @@ def get_movements(y: int, x: int, direction: int, matrix: List[str]) -> List[Tup
     return movements
 
 
-def find_best_path(matrix: List[str], target_y: int, target_x: int, base_loss: int) -> int:
+def find_best_path(matrix: List[str], target_y: int, target_x: int) -> int:
     h = len(matrix)
     w = len(matrix[0])
     half_circumference = h + w - 1
@@ -67,7 +69,7 @@ def find_best_path(matrix: List[str], target_y: int, target_x: int, base_loss: i
                     movement[0], movement[1], movement[2], this_loss, min_loss)
         return min_loss
 
-    return find_path(0, 0, 2, 0, base_loss)
+    return find_path(0, 0, 2, 0, BASE_LOSS)
 
 
 start_time = time.time()
@@ -75,10 +77,8 @@ start_time = time.time()
 with open("2023/17/input.txt") as input:
     matrix = [line.strip() for line in input.readlines()]
 
-BASE_LOSS = 1000
-
 min_loss = find_best_path(
-    matrix, len(matrix) - 1, len(matrix[0]) - 1, BASE_LOSS)
+    matrix, len(matrix) - 1, len(matrix[0]) - 1)
 print(f"Answer for part 1: {min_loss}")
 
 end_time = time.time()
