@@ -1,26 +1,37 @@
 from collections import deque
+import time
 from typing import List, Tuple
 
 
+# Lava lagoon - read instructions to work out the volume of the lagoon
+
 class Instruction:
-    def __init__(self, direction: str, distance: str, color: str):
+    def __init__(self, direction: str, distance: int):
         match direction:
-            case "L":
+            case "L" | "2":
                 self.direction = (0, -1)
-            case "U":
+            case "U" | "3":
                 self.direction = (-1, 0)
-            case "R":
+            case "R" | "0":
                 self.direction = (0, 1)
-            case "D":
+            case "D" | "1":
                 self.direction = (1, 0)
-        self.distance = int(distance)
+        self.distance = distance
 
 
-def parse_dig_plan(dig_plan: List[str]) -> List[Instruction]:
+def parse_dig_plan(dig_plan: List[str], use_hexadecimals: bool) -> List[Instruction]:
     instructions = []
     for line in dig_plan:
-        direction, distance, color = line.split(" ")
-        instruction = Instruction(direction, distance, color)
+        if not use_hexadecimals:
+            # Part 1 uses small distances no greater than 12m
+            direction, distance, _ = line.split(" ")
+            distance = int(distance)
+        else:
+            # Part 2 uses huge distances, represented as hexadecimal numbers, which can be over 1000km
+            hex = line.split(" ")[-1].strip()[2:-1]
+            distance = int(hex[:-1], 16)
+            direction = hex[-1]
+        instruction = Instruction(direction, distance)
         instructions.append(instruction)
     return instructions
 
@@ -71,7 +82,7 @@ def dig_perimeter(
 def find_interior_position(matrix: List[List[bool]], h: int, w: int):
     """
     Finds a position inside the dig perimeter.
-    
+
     This position is the 3rd position in a ".#." pattern,
     which is not proceeded by a "##" pattern on the same row,
     where a "#" represents a perimeter position
@@ -96,7 +107,7 @@ def dig_interior(matrix: List[List[bool]], h: int, w: int):
     while len(dig_queue) > 0:
         y, x = dig_queue.popleft()
         if 0 < y < h and 0 < x < w and not matrix[y][x]:
-            matrix[y][x] = 1
+            matrix[y][x] = True
             dig_queue.append((y, x - 1))
             dig_queue.append((y - 1, x))
             dig_queue.append((y, x + 1))
@@ -112,8 +123,8 @@ def measure_volume(matrix: List[List[bool]], h: int, w: int):
     return volume
 
 
-def get_lava_lagoon_volume(dig_plan: List[str]) -> int:
-    instructions = parse_dig_plan(dig_plan)
+def get_lava_lagoon_volume(dig_plan: List[str], use_hexadecimals: bool = False) -> int:
+    instructions = parse_dig_plan(dig_plan, use_hexadecimals)
     matrix, position = create_matrix(instructions)
     h = len(matrix)
     w = len(matrix[0])
@@ -125,4 +136,11 @@ def get_lava_lagoon_volume(dig_plan: List[str]) -> int:
 with open("2023/18/input.txt") as input:
     dig_plan = input.readlines()
 
+start_time = time.time()
+
 print(f"Answer for part 1: {get_lava_lagoon_volume(dig_plan)}")
+print(f"Answer for part 2: {get_lava_lagoon_volume(dig_plan, True)}")
+
+end_time = time.time()
+execution_time = int((end_time - start_time) * 1000)
+print(f"The script took {execution_time} ms to run")
